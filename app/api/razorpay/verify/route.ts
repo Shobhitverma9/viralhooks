@@ -3,6 +3,8 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 
+export const dynamic = "force-dynamic";
+
 const PAYMENTS_FILE = path.join(process.cwd(), "data", "payments.json");
 
 export async function POST(request: NextRequest) {
