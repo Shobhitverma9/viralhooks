@@ -68,8 +68,14 @@
 
 /* Hero Section */
 .heroSection {
-  padding: 60px 0 100px;
+  padding: 40px 0 60px;
   overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .heroSection {
+    padding: 60px 0 100px;
+  }
 }
 
 @media (min-width: 900px) {
@@ -293,25 +299,26 @@
 }
 
 .mainTitle {
-  font-size: 3.2rem;
+  font-size: 2.2rem;
   font-weight: 950;
   line-height: 1.1;
   margin-bottom: 24px;
-  letter-spacing: -2px;
+  letter-spacing: -1.5px;
 }
 
 @media (min-width: 768px) {
   .mainTitle {
     font-size: 4.8rem;
+    letter-spacing: -2px;
   }
 }
 
 .mainSubtitle {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   color: var(--text-secondary);
   max-width: 550px;
-  margin-bottom: 40px;
-  line-height: 1.6;
+  margin-bottom: 30px;
+  line-height: 1.5;
 }
 
 /* 3D Mockup Overlay */
@@ -448,9 +455,9 @@
 }
 
 .hindiTitle {
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   font-weight: 900;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   line-height: 1.2;
 }
 
@@ -617,14 +624,14 @@
 }
 
 .priceNow {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 900;
   color: var(--accent-gold);
 }
 
 .stickyBtn {
-  font-size: 1.25rem;
-  padding: 16px 40px;
+  font-size: 1.1rem;
+  padding: 14px 30px;
 }
 
 @media (max-width: 600px) {
@@ -659,4 +666,130 @@
   color: var(--text-secondary);
   font-size: 0.8rem;
   opacity: 0.5;
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal {
+  background: #0a0a0f;
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 450px;
+  padding: 30px 20px;
+  position: relative;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modalClose {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 5px;
+}
+
+.modalHeader {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.modalHeader h3 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.modalHeader p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputGroup label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+}
+
+.modalInput {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  color: #fff;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.modalInput:focus {
+  border-color: var(--accent-gold);
+  outline: none;
+}
+
+.modalSubmit {
+  background: var(--gradient-gold);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 18px;
+  font-weight: 900;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.modalSubmit:hover {
+  transform: translateY(-2px);
+}
+
+.successMessage {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.successIcon {
+  color: #22c55e;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.inviteLink {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px dashed var(--accent-gold);
+  padding: 15px;
+  border-radius: 12px;
+  color: var(--accent-gold);
+  font-weight: 800;
+  margin: 20px 0;
+  display: block;
+  text-decoration: none;
 }

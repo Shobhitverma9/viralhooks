@@ -14,6 +14,9 @@ import {
   ShieldCheck,
   Flame,
   MousePointer2,
+  X,
+  Check,
+  Loader2,
 } from "lucide-react";
 
 const ViralLogo = () => (
@@ -34,9 +37,22 @@ const ViralLogo = () => (
   </svg>
 );
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 export default function Home() {
   const [timeLeft, setTimeLeft] = useState(120);
   const [isClient, setIsClient] = useState(false);
+  
+  // Payment States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [telegramId, setTelegramId] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentStep, setPaymentStep] = useState<"form" | "success">("form");
+  const [inviteLink, setInviteLink] = useState("");
 
   useEffect(() => {
     setIsClient(true);
@@ -51,6 +67,76 @@ export default function Home() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const handleBuyClick = () => {
+    setIsModalOpen(true);
+    setPaymentStep("form");
+  };
+
+  const startRazorpay = async () => {
+    if (!telegramId) {
+      alert("Please enter your Telegram Username");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const amount = timeLeft > 0 ? 99 : 999;
+      
+      // 1. Create Order
+      const orderRes = await fetch("/api/razorpay/order", {
+        method: "POST",
+        body: JSON.stringify({ amount, telegram_username: telegramId }),
+      });
+      const order = await orderRes.json();
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Viral Hooks Bundle",
+        description: "2000+ Viral Hooks Access",
+        order_id: order.id,
+        handler: async function (response: any) {
+          // 2. Verify Payment
+          const verifyRes = await fetch("/api/razorpay/verify", {
+            method: "POST",
+            body: JSON.stringify({
+              ...response,
+              telegram_username: telegramId
+            }),
+          });
+          const verifyData = await verifyRes.json();
+
+          if (verifyData.ok) {
+            // 3. Get Invite Link
+            const inviteRes = await fetch("/api/telegram/invite");
+            const inviteData = await inviteRes.json();
+            setInviteLink(inviteData.invite_link);
+            setPaymentStep("success");
+          } else {
+            alert("Payment verification failed. Please contact support.");
+          }
+        },
+        prefill: {
+          name: "",
+          email: "",
+          contact: ""
+        },
+        theme: {
+          color: "#fbbf24",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -74,7 +160,7 @@ export default function Home() {
                 <span style={{ fontWeight: 800, fontSize: '1.3rem', color: 'var(--accent-blue-light)', letterSpacing: '-0.5px' }}>HOOKS</span>
               </div>
             </div>
-            <button className={`${styles.navBtn} btn-primary`}>Buy Now</button>
+            <button onClick={handleBuyClick} className={`${styles.navBtn} btn-primary`}>Buy Now</button>
           </div>
         </div>
       </nav>
@@ -107,6 +193,7 @@ export default function Home() {
                 }}
               >
                 <button
+                  onClick={handleBuyClick}
                   className="btn-primary"
                   style={{ padding: "18px 40px", fontSize: "1.25rem" }}
                 >
@@ -534,7 +621,7 @@ export default function Home() {
                 </>
               )}
             </div>
-            <button className={`${styles.stickyBtn} btn-primary`}>
+            <button onClick={handleBuyClick} className={`${styles.stickyBtn} btn-primary`}>
               Buy Now & Go Viral{" "}
               <MousePointer2 style={{ marginLeft: "10px" }} />
             </button>
@@ -555,6 +642,69 @@ export default function Home() {
           </p>
         </div>
       </footer>
+
+      {/* Payment / Telegram Modal */}
+      {isModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <button className={styles.modalClose} onClick={() => setIsModalOpen(false)}>
+              <X size={24} />
+            </button>
+
+            {paymentStep === "form" ? (
+              <>
+                <div className={styles.modalHeader}>
+                  <h3>Complete Your Order</h3>
+                  <p>Enter your Telegram Username to get access</p>
+                </div>
+                <div className={styles.modalBody}>
+                  <div className={styles.inputGroup}>
+                    <label>Telegram Username (without @)</label>
+                    <input 
+                      type="text" 
+                      className={styles.modalInput} 
+                      placeholder="e.g. creative_shobhit"
+                      value={telegramId}
+                      onChange={(e) => setTelegramId(e.target.value)}
+                    />
+                  </div>
+                  <button 
+                    className={styles.modalSubmit} 
+                    onClick={startRazorpay}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="animate-spin" style={{ margin: "0 auto" }} />
+                    ) : (
+                      `Pay ₹${timeLeft > 0 ? 99 : 999} & Join Channel`
+                    )}
+                  </button>
+                  <p style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                    <ShieldCheck size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: "4px" }} />
+                    Secure Payment via Razorpay
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className={styles.successMessage}>
+                <div className={styles.successIcon}>
+                  <CheckCircle2 size={64} />
+                </div>
+                <h3>Payment Successful!</h3>
+                <p>Click the link below to send a Join Request to our Private Channel. Our bot will approve you automatically.</p>
+                
+                <a href={inviteLink} target="_blank" rel="noopener noreferrer" className={styles.inviteLink}>
+                  Request to Join Channel
+                </a>
+
+                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                  Make sure you are using <b>@{telegramId}</b> on Telegram.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
