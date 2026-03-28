@@ -636,6 +636,7 @@ export default function Home() {
             <a href="/terms">Terms</a>
             <a href="/privacy">Privacy</a>
             <a href="/cancellation">Refund Policy</a>
+            <a href="/contact">Contact Us</a>
           </div>
           <p className={styles.copyright}>
             © 2024 Viral Hooks Bundle. All rights reserved.
