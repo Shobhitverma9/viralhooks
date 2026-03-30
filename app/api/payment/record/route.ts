@@ -4,10 +4,10 @@ import path from "path";
 
 export async function POST(request: NextRequest) {
   try {
-    const { telegram_username, amount } = await request.json();
+    const { name, whatsapp_number, amount } = await request.json();
 
-    if (!telegram_username) {
-      return NextResponse.json({ error: "Telegram username is required" }, { status: 400 });
+    if (!name || !whatsapp_number) {
+      return NextResponse.json({ error: "Name and WhatsApp number are required" }, { status: 400 });
     }
 
     const filePath = path.join(process.cwd(), "data", "payments.json");
@@ -23,7 +23,8 @@ export async function POST(request: NextRequest) {
 
     // Add new payment record
     const newRecord = {
-      telegram_username,
+      name,
+      whatsapp_number,
       amount,
       status: "pending_verification",
       timestamp: new Date().toISOString(),

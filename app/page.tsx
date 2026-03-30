@@ -49,7 +49,8 @@ export default function Home() {
   
   // Payment States
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [telegramId, setTelegramId] = useState("");
+  const [name, setName] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStep, setPaymentStep] = useState<"form" | "verify" | "success">("form");
   const [inviteLink, setInviteLink] = useState("");
@@ -74,8 +75,8 @@ export default function Home() {
   };
 
   const handleUPIPayment = async () => {
-    if (!telegramId) {
-      alert("Please enter your Telegram Username");
+    if (!name || !whatsappNumber) {
+      alert("Please enter your name and WhatsApp number");
       return;
     }
 
@@ -97,19 +98,11 @@ export default function Home() {
       // 1. Record Payment attempt
       await fetch("/api/payment/record", {
         method: "POST",
-        body: JSON.stringify({ amount, telegram_username: telegramId }),
+        body: JSON.stringify({ amount, name, whatsapp_number: whatsappNumber }),
       });
 
-      // 2. Get Invite Link
-      const inviteRes = await fetch("/api/telegram/invite");
-      const inviteData = await inviteRes.json();
-      
-      if (inviteData.invite_link) {
-        setInviteLink(inviteData.invite_link);
-        setPaymentStep("success");
-      } else {
-        throw new Error("Failed to get invite link");
-      }
+      // Show success screen
+      setPaymentStep("success");
     } catch (err) {
       console.error(err);
       alert("Something went wrong. Please try again.");
@@ -636,17 +629,27 @@ export default function Home() {
               <>
                 <div className={styles.modalHeader}>
                   <h3>Complete Your Order</h3>
-                  <p>Enter your Telegram Username to get access</p>
+                  <p>Enter your details to get instant access</p>
                 </div>
                 <div className={styles.modalBody}>
                   <div className={styles.inputGroup}>
-                    <label>Telegram Username (without @)</label>
+                    <label>Full Name</label>
+                    <input 
+                       type="text" 
+                       className={styles.modalInput} 
+                       placeholder="e.g. Shobhit Verma"
+                       value={name}
+                       onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <label>WhatsApp Number (without +91)</label>
                     <input 
                       type="text" 
                       className={styles.modalInput} 
-                      placeholder="e.g. creative_shobhit"
-                      value={telegramId}
-                      onChange={(e) => setTelegramId(e.target.value)}
+                      placeholder="e.g. 9876543210"
+                      value={whatsappNumber}
+                      onChange={(e) => setWhatsappNumber(e.target.value)}
                     />
                   </div>
                   <button 
@@ -707,15 +710,15 @@ export default function Home() {
                 <div className={styles.successIcon}>
                   <CheckCircle2 size={64} />
                 </div>
-                <h3>Payment Recorded!</h3>
-                <p>Click the link below to send a <b>Join Request</b> to our Private Channel. Our team will approve you after verifying the payment.</p>
+                <h3>Order Placed Successfully!</h3>
+                <p>Click the button below to join our WhatsApp group and get your bundle access.</p>
                 
-                <a href={inviteLink} target="_blank" rel="noopener noreferrer" className={styles.inviteLink}>
-                  Request to Join Channel
+                <a href="https://wa.link/wmorwb" target="_blank" rel="noopener noreferrer" className={styles.inviteLink}>
+                  Join WhatsApp Now
                 </a>
 
                 <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-                  Make sure you are using <b>@{telegramId}</b> on Telegram.
+                  Thank you for your order, <b>{name}</b>!
                 </p>
               </div>
             )}
