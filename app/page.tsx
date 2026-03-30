@@ -39,7 +39,7 @@ const ViralLogo = () => (
 
 declare global {
   interface Window {
-    Razorpay: any;
+    // Razorpay: any;
   }
 }
 
@@ -51,7 +51,7 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [telegramId, setTelegramId] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentStep, setPaymentStep] = useState<"form" | "success">("form");
+  const [paymentStep, setPaymentStep] = useState<"form" | "verify" | "success">("form");
   const [inviteLink, setInviteLink] = useState("");
 
   useEffect(() => {
@@ -73,63 +73,43 @@ export default function Home() {
     setPaymentStep("form");
   };
 
-  const startRazorpay = async () => {
+  const handleUPIPayment = async () => {
     if (!telegramId) {
       alert("Please enter your Telegram Username");
       return;
     }
 
+    const amount = timeLeft > 0 ? 99 : 999;
+    const upiUrl = `upi://pay?pa=paytmqr69vikf@ptys&pn=SurajMaurya&am=${amount}&cu=INR`;
+
+    // Open UPI link
+    window.location.href = upiUrl;
+    
+    // Transition to verification step
+    setPaymentStep("verify");
+  };
+
+  const confirmPayment = async () => {
     setIsProcessing(true);
     try {
       const amount = timeLeft > 0 ? 99 : 999;
       
-      // 1. Create Order
-      const orderRes = await fetch("/api/razorpay/order", {
+      // 1. Record Payment attempt
+      await fetch("/api/payment/record", {
         method: "POST",
         body: JSON.stringify({ amount, telegram_username: telegramId }),
       });
-      const order = await orderRes.json();
 
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: order.amount,
-        currency: order.currency,
-        name: "Viral Hooks Bundle",
-        description: "2000+ Viral Hooks Access",
-        order_id: order.id,
-        handler: async function (response: any) {
-          // 2. Verify Payment
-          const verifyRes = await fetch("/api/razorpay/verify", {
-            method: "POST",
-            body: JSON.stringify({
-              ...response,
-              telegram_username: telegramId
-            }),
-          });
-          const verifyData = await verifyRes.json();
-
-          if (verifyData.ok) {
-            // 3. Get Invite Link
-            const inviteRes = await fetch("/api/telegram/invite");
-            const inviteData = await inviteRes.json();
-            setInviteLink(inviteData.invite_link);
-            setPaymentStep("success");
-          } else {
-            alert("Payment verification failed. Please contact support.");
-          }
-        },
-        prefill: {
-          name: "",
-          email: "",
-          contact: ""
-        },
-        theme: {
-          color: "#fbbf24",
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      // 2. Get Invite Link
+      const inviteRes = await fetch("/api/telegram/invite");
+      const inviteData = await inviteRes.json();
+      
+      if (inviteData.invite_link) {
+        setInviteLink(inviteData.invite_link);
+        setPaymentStep("success");
+      } else {
+        throw new Error("Failed to get invite link");
+      }
     } catch (err) {
       console.error(err);
       alert("Something went wrong. Please try again.");
@@ -390,7 +370,7 @@ export default function Home() {
               <TrendingUp size={20} /> Millions of Views Delivered
             </div>
             <div className={styles.trustItem}>
-              <ShieldCheck size={20} /> Razorpay Verified
+              <ShieldCheck size={20} /> Payment Verified
             </div>
           </div>
         </div>
@@ -671,19 +651,55 @@ export default function Home() {
                   </div>
                   <button 
                     className={styles.modalSubmit} 
-                    onClick={startRazorpay}
+                    onClick={handleUPIPayment}
+                  >
+                    Pay ₹{timeLeft > 0 ? 99 : 999} via UPI
+                  </button>
+                  <p style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                    <ShieldCheck size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: "4px" }} />
+                    Secure UPI Payment
+                  </p>
+                </div>
+              </>
+            ) : paymentStep === "verify" ? (
+              <>
+                <div className={styles.modalHeader}>
+                  <h3>Verifying Payment</h3>
+                  <p>Open your UPI app and complete the ₹{timeLeft > 0 ? 99 : 999} payment.</p>
+                </div>
+                <div className={styles.modalBody}>
+                  <div style={{ textAlign: "center", marginBottom: "20px" }}>
+                    <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
+                      Once you've completed the payment in your UPI app, click the button below to get your invite link.
+                    </p>
+                  </div>
+                  <button 
+                    className={styles.modalSubmit} 
+                    onClick={confirmPayment}
                     disabled={isProcessing}
                   >
                     {isProcessing ? (
                       <Loader2 className="animate-spin" style={{ margin: "0 auto" }} />
                     ) : (
-                      `Pay ₹${timeLeft > 0 ? 99 : 999} & Join Channel`
+                      "I Have Paid - Join Channel"
                     )}
                   </button>
-                  <p style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                    <ShieldCheck size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: "4px" }} />
-                    Secure Payment via Razorpay
-                  </p>
+                  <button 
+                    style={{ 
+                      marginTop: "10px", 
+                      background: "transparent", 
+                      border: "1px solid var(--border-color)",
+                      color: "var(--text-secondary)",
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "12px",
+                      fontSize: "0.9rem",
+                      cursor: "pointer"
+                    }}
+                    onClick={() => setPaymentStep("form")}
+                  >
+                    Go Back
+                  </button>
                 </div>
               </>
             ) : (
@@ -691,8 +707,8 @@ export default function Home() {
                 <div className={styles.successIcon}>
                   <CheckCircle2 size={64} />
                 </div>
-                <h3>Payment Successful!</h3>
-                <p>Click the link below to send a Join Request to our Private Channel. Our bot will approve you automatically.</p>
+                <h3>Payment Recorded!</h3>
+                <p>Click the link below to send a <b>Join Request</b> to our Private Channel. Our team will approve you after verifying the payment.</p>
                 
                 <a href={inviteLink} target="_blank" rel="noopener noreferrer" className={styles.inviteLink}>
                   Request to Join Channel
