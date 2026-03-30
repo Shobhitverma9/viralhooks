@@ -80,7 +80,7 @@ export default function Home() {
       return;
     }
 
-    const amount = timeLeft > 0 ? 99 : 999;
+    const amount = 1; // Test Price
     const upiUrl = `upi://pay?pa=paytmqr69vikf@ptys&pn=SurajMaurya&am=${amount}&cu=INR`;
 
     // Open UPI link
@@ -93,7 +93,7 @@ export default function Home() {
   const confirmPayment = async () => {
     setIsProcessing(true);
     try {
-      const amount = timeLeft > 0 ? 99 : 999;
+      const amount = 1; // Test Price
       
       // 1. Record Payment attempt
       await fetch("/api/payment/record", {
@@ -170,7 +170,7 @@ export default function Home() {
                   className="btn-primary"
                   style={{ padding: "18px 40px", fontSize: "1.25rem" }}
                 >
-                  Get the Pack for {isClient && timeLeft <= 0 ? "₹999" : "₹99"}
+                  Get the Pack for ₹1 (Test)
                 </button>
                 <div
                   style={{
@@ -656,7 +656,7 @@ export default function Home() {
                     className={styles.modalSubmit} 
                     onClick={handleUPIPayment}
                   >
-                    Pay ₹{timeLeft > 0 ? 99 : 999} via UPI
+                    Pay ₹1 via UPI (Test)
                   </button>
                   <p style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
                     <ShieldCheck size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: "4px" }} />
@@ -668,7 +668,7 @@ export default function Home() {
               <>
                 <div className={styles.modalHeader}>
                   <h3>Verifying Payment</h3>
-                  <p>Open your UPI app and complete the ₹{timeLeft > 0 ? 99 : 999} payment.</p>
+                  <p>Open your UPI app and complete the ₹1 test payment.</p>
                 </div>
                 <div className={styles.modalBody}>
                   <div style={{ textAlign: "center", marginBottom: "20px" }}>
